@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_json, col, window, avg, when, corr, sum
+from pyspark.sql.functions import from_json, col, window, avg, when, corr, sum, lit
 from pyspark.sql.types import StructType, StructField, StringType, FloatType, TimestampType
 
 # -------- 1. Définition du Schéma JSON --------
@@ -61,18 +61,6 @@ spread_anomalies_df = data_with_volatility.groupBy("coin", window("timestamp", "
     "spread_anomaly", when(col("avg_spread") > col("avg_spread") * 5, True).otherwise(False)
 )
 
-# -------- 9. Corrélation entre cryptos --------
-agg_data = data_with_watermark.groupBy(
-    window(col("timestamp"), "30 seconds"), col("coin")
-).agg(
-    avg("spot").alias("avg_spot")
-)
-
-correlation_df = agg_data.groupBy("window").agg(
-    sum("avg_spot").alias("total_avg_spot")  
-).agg(
-    corr("total_avg_spot", "total_avg_spot").alias("correlation")
-)
 
 # -------- 10. Calcul de la Moyenne Mobile Exponentielle (EMA) --------
 ema_df = data_with_watermark.groupBy(
@@ -81,12 +69,7 @@ ema_df = data_with_watermark.groupBy(
     avg("spot").alias("ema")  # Test avec moyenne simple avant d’ajouter le lissage EMA
 )
 
-# -------- 11. Écriture des résultats en Streaming --------
-query_raw = data.writeStream \
-    .outputMode("append") \
-    .format("console") \
-    .option("truncate", False) \
-    .start()
+
 query_pumps_dumps = pumps_dumps_df.writeStream \
     .outputMode("update") \
     .format("console") \
@@ -97,17 +80,11 @@ query_spread_anomalies = spread_anomalies_df.writeStream \
     .format("console") \
     .start()
 
-query_correlation = correlation_df.writeStream \
-    .outputMode("update") \
-    .format("console") \
-    .start()
-
 query_ema = ema_df.writeStream \
     .outputMode("update") \
     .format("console") \
     .start()
-query_raw.awaitTermination()
+# query_raw.awaitTermination()
 query_pumps_dumps.awaitTermination()
 query_spread_anomalies.awaitTermination()
-query_correlation.awaitTermination()
 query_ema.awaitTermination()
