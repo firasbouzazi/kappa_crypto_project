@@ -82,6 +82,11 @@ ema_df = data_with_watermark.groupBy(
 )
 
 # -------- 11. Écriture des résultats en Streaming --------
+query_raw = data.writeStream \
+    .outputMode("append") \
+    .format("console") \
+    .option("truncate", False) \
+    .start()
 query_pumps_dumps = pumps_dumps_df.writeStream \
     .outputMode("update") \
     .format("console") \
@@ -101,7 +106,7 @@ query_ema = ema_df.writeStream \
     .outputMode("update") \
     .format("console") \
     .start()
-
+query_raw.awaitTermination()
 query_pumps_dumps.awaitTermination()
 query_spread_anomalies.awaitTermination()
 query_correlation.awaitTermination()
