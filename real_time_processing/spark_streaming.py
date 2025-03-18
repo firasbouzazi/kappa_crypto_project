@@ -82,5 +82,5 @@ query = crypto_df.writeStream \
     .option("truncate", "false") \
     .option("checkpointLocation", "/tmp/kafka_spark_checkpoint") \
     .start()
-
+#
 query.awaitTermination()
