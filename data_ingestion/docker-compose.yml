@@ -31,7 +31,7 @@ services:
     ports:
       - "9092:9092"
     healthcheck:
-      test: ["CMD-SHELL", "echo > /dev/tcp/localhost/9092"]
+      test: [ "CMD-SHELL", "echo > /dev/tcp/localhost/9092" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -126,6 +126,45 @@ services:
       - kafka
     networks:
       - default
+  #################################################################
+  ##                         CASSANDRA                          ##
+  #################################################################
+  cassandra:
+    image: cassandra:latest
+    container_name: cassandra1
+    restart: always
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_SEEDS=cassandra1
+      - MAX_HEAP_SIZE=1024M
+      - HEAP_NEWSIZE=512M
+      - CASSANDRA_CLUSTER_NAME=crypto_cluster
+      - CASSANDRA_NUM_TOKENS=256
+      - CASSANDRA_DC=datacenter1
+      - CASSANDRA_RACK=rack1
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    networks:
+      - default
+
+  #################################################################
+  ##                      CASSANDRA SETUP                         ##
+  #################################################################
+  cassandra-setup:
+    image: cassandra:latest
+    container_name: cassandra-setup
+    depends_on:
+      - cassandra
+    entrypoint: [ "sh", "-c", "sleep 20 && cqlsh cassandra -f /cassandra-init/init.cql" ]
+    volumes:
+      - ./cassandra-init:/cassandra-init
+    networks:
+      - default
+
+volumes:
+  cassandra_data:
+
 
 networks:
   default:
