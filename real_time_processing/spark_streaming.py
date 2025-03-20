@@ -91,5 +91,4 @@ query = final_df.writeStream \
     .foreachBatch(write_to_cassandra) \
     .outputMode("update") \
     .start()
-
 query.awaitTermination()
