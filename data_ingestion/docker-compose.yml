@@ -112,20 +112,6 @@ services:
       - spark-master
     networks:
       - default
-
-  #################################################################
-  ##                    SPARK STREAMING JOB                      ##
-  #################################################################
-  spark-streaming:
-    build:
-      context: ../real_time_processing
-    container_name: spark-streaming
-    restart: always
-    depends_on:
-      - spark-master
-      - kafka
-    networks:
-      - default
   #################################################################
   ##                         CASSANDRA                          ##
   #################################################################
@@ -158,7 +144,23 @@ services:
       - cassandra
     entrypoint: [ "sh", "-c", "sleep 20 && cqlsh cassandra -f /cassandra-init/init.cql" ]
     volumes:
-      - ./cassandra-init:/cassandra-init
+      - ../cassandra-init:/cassandra-init
+    networks:
+      - default
+  #################################################################
+  ##                    SPARK STREAMING JOB                      ##
+  #################################################################
+  spark-streaming:
+    build:
+      context: ../real_time_processing
+    container_name: spark-streaming
+    restart: always
+    depends_on:
+      - spark-master
+      - kafka
+      - cassandra
+    environment:
+      - SPARK_CASSANDRA_CONNECTION_HOST=cassandra1
     networks:
       - default
 

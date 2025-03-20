@@ -7,6 +7,8 @@ WORKDIR /app
 # Create a non-root user and switch to it
 RUN useradd -m appuser && chown -R appuser /app
 USER appuser
+RUN pip install cassandra-driver --no-cache-dir
+
 
 # Copy the current directory contents into the container at /app
 COPY --chown=appuser . .
