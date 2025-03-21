@@ -1,0 +1,17 @@
+# Dockerfile for Spark Streaming job
+FROM bitnami/spark:latest
+
+# Set working directory
+WORKDIR /opt/spark-app
+
+# Copy the Spark script into the image
+COPY spark_streaming.py .
+
+# Install required packages (already included in Spark, but we need the Kafka connector)
+ENV SPARK_HOME=/opt/bitnami/spark
+
+# Add required Kafka package for Spark Streaming
+ENV SPARK_SUBMIT_ARGS="--packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0"
+
+# Default command to run the Spark job
+CMD ["spark-submit","--master", "spark://spark-master:7077","--packages", "org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.0,com.datastax.spark:spark-cassandra-connector_2.12:3.3.0","/opt/spark-app/spark_streaming.py"]

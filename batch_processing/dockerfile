@@ -1,0 +1,21 @@
+# Use Bitnami's Spark image as the base
+FROM bitnami/spark:3.5
+
+# (Optional) Switch to root to install additional packages if needed
+USER root
+
+# Install python3 and pip if not already available (the base image may already have these)
+RUN apt-get update && apt-get install -y python3 python3-pip
+
+# Install any Python dependencies your job requires.
+# For example, install pyspark (if not already present) and cassandra-driver.
+RUN pip3 install pyspark cassandra-driver
+
+# Set working directory
+WORKDIR /app
+
+# Copy your spark_batch.py into the container
+COPY spark_batch.py /app/spark_batch.py
+
+# When running spark-submit, include the Spark Cassandra Connector package so that Spark can write to Cassandra.
+ENTRYPOINT ["spark-submit", "--packages", "com.datastax.spark:spark-cassandra-connector_2.12:3.2.0", "/app/spark_batch.py"]
