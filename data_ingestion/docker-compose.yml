@@ -39,21 +39,6 @@ services:
     mem_limit: 512M
 
   #################################################################
-  ##                           KAFDROP                           ##
-  #################################################################
-  kafdrop:
-    image: obsidiandynamics/kafdrop:3.30.0
-    container_name: kafdrop
-    restart: always
-    depends_on:
-      - kafka
-    ports:
-      - "9000:9000"
-    environment:
-      KAFKA_BROKERCONNECT: kafka:9092
-    mem_limit: 256M
-
-  #################################################################
   ##                           PRODUCER                          ##
   #################################################################
   producer:
@@ -64,7 +49,9 @@ services:
       - kafka
     environment:
       KAFKA_BROKER: kafka:9092
-    mem_limit: 256M
+    volumes:
+      - ../storage:/app/storage
+    mem_limit: 514M
 
   #################################################################
   ##                        SPARK MASTER                         ##
@@ -84,6 +71,7 @@ services:
       - ../real_time_processing:/opt/spark-app
     networks:
       - default
+    mem_limit: 1024M
 
   #################################################################
   ##                        SPARK WORKER 1                       ##
@@ -99,6 +87,7 @@ services:
       - spark-master
     networks:
       - default
+    mem_limit: 1024M
 
   #################################################################
   ##                         CASSANDRA                          ##
@@ -141,6 +130,7 @@ services:
       - ../cassandra-init:/cassandra-init
     networks:
       - default
+    mem_limit: 256M
 
   #################################################################
   ##                    SPARK STREAMING JOB                      ##
@@ -174,6 +164,7 @@ services:
       - grafana_data:/var/lib/grafana
     networks:
       - default
+    mem_limit: 514M
 
 volumes:
   cassandra_data:

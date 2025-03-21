@@ -1,20 +1,21 @@
-# Use an official Python runtime as a parent image
+# 1. Utiliser l'image Python 3.9 slim comme base
 FROM python:3.9-slim
 
-# Set the working directory in the container
+# 2. Définir le répertoire de travail
 WORKDIR /app
 
-# Create a non-root user and switch to it
-RUN useradd -m appuser && chown -R appuser /app
+# 3. Créer un utilisateur non-root et le répertoire /app/storage
+RUN useradd -m appuser && mkdir -p /app/storage && chown -R appuser /app
+
+# 4. Basculer vers l'utilisateur non-root
 USER appuser
-RUN pip install cassandra-driver --no-cache-dir
 
+# 5. Installer les dépendances système ou Python de base si nécessaire
+RUN pip install --no-cache-dir cassandra-driver
 
-# Copy the current directory contents into the container at /app
-COPY --chown=appuser . .
-
-# Install any needed packages specified in requirements.txt
+# 6. Copier le code de votre application et le fichier requirements
+COPY --chown=appuser . . 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Run the producer script when the container launches
-CMD ["python", "coinbase_producer.py"]
+# 7. Lancer les deux scripts Python à l'exécution du conteneur
+CMD ["/bin/sh", "-c", "python coinbase_producer.py & python kafka_to_csv.py"]
