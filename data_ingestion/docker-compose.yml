@@ -114,7 +114,7 @@ services:
       - MAX_HEAP_SIZE=1024M
       - HEAP_NEWSIZE=512M
       - CASSANDRA_CLUSTER_NAME=crypto_cluster
-      - CASSANDRA_NUM_TOKENS=16
+      - CASSANDRA_NUM_TOKENS=256
       - CASSANDRA_DC=datacenter1
       - CASSANDRA_RACK=rack1
     volumes:
@@ -159,8 +159,25 @@ services:
     networks:
       - default
 
+  #################################################################
+  ##                           GRAFANA                           ##
+  #################################################################
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - default
+
 volumes:
   cassandra_data:
+  grafana_data:
 
 
 networks:
