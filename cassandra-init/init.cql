@@ -16,3 +16,13 @@ CREATE TABLE IF NOT EXISTS crypto_keyspace.crypto_streaming (
   ema float,
   PRIMARY KEY ((coin), window_start, window_end)
 );
+
+CREATE TABLE IF NOT EXISTS crypto_keyspace.crypto_raw (
+    coin text,
+    spot float,
+    buy float,
+    sell float,
+    spread float,
+    timestamp timestamp,
+    PRIMARY KEY (coin, timestamp)
+);

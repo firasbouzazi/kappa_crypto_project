@@ -34,6 +34,17 @@ data = df.selectExpr("CAST(value AS STRING) as json_str") \
     .select(from_json("json_str", schema).alias("data")) \
     .select("data.*") \
     .withColumn("timestamp", col("timestamp").cast(TimestampType()))
+def write_raw_to_cassandra(batch_df, batch_id):
+    batch_df.write \
+        .format("org.apache.spark.sql.cassandra") \
+        .options(keyspace="crypto_keyspace", table="crypto_raw") \
+        .mode("append") \
+        .save()
+
+raw_query = data.writeStream \
+    .outputMode("update") \
+    .foreachBatch(write_raw_to_cassandra) \
+    .start()
 
 # 5. Application d'un watermark pour gérer la latence
 data_with_watermark = data.withWatermark("timestamp", "2 minutes")
