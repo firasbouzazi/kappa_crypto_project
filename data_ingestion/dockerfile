@@ -1,0 +1,21 @@
+# 1. Utiliser l'image Python 3.9 slim comme base
+FROM python:3.9-slim
+
+# 2. Définir le répertoire de travail
+WORKDIR /app
+
+# 3. Créer un utilisateur non-root et le répertoire /app/storage
+RUN useradd -m appuser && mkdir -p /app/storage && chown -R appuser /app
+
+# 4. Basculer vers l'utilisateur non-root
+USER appuser
+
+# 5. Installer les dépendances système ou Python de base si nécessaire
+RUN pip install --no-cache-dir cassandra-driver
+
+# 6. Copier le code de votre application et le fichier requirements
+COPY --chown=appuser . . 
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 7. Lancer les deux scripts Python à l'exécution du conteneur
+CMD ["/bin/sh", "-c", "python coinbase_producer.py & python kafka_to_csv.py"]
